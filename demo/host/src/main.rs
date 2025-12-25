@@ -10,6 +10,7 @@ use wasmtime_wasi::{DirPerms, FilePerms, WasiCtx};
 #[derive(Parser, Debug)]
 struct Args {
     /// Path to the compiled WASI module (.wasm)
+    /// Default path assumes `cargo build --release --target wasm32-wasip1` was run in demo/wasi
     #[arg(long, default_value = "demo/wasi/target/wasm32-wasip1/release/wasi_demo.wasm")]
     wasi: PathBuf,
 
@@ -72,18 +73,31 @@ fn run_host_import(engine: &Engine) -> Result<()> {
     let mut store = Store::new(engine, ());
     let mut linker = Linker::new(engine);
 
-    linker.func_wrap("env", "log", |mut caller: wasmtime::Caller<'_, ()>, ptr: i32, len: i32| {
+    linker.func_wrap("env", "log", |mut caller: wasmtime::Caller<'_, ()>, ptr: i32, len: i32| -> Result<()> {
         // Read memory and print to host stdout
         let mem = caller
             .get_export("memory")
             .and_then(|e| e.into_memory())
-            .expect("memory export");
+            .context("memory export not found")?;
+        
+        // Validate the pointer and length
+        if ptr < 0 || len < 0 {
+            anyhow::bail!("Invalid pointer or length: ptr={}, len={}", ptr, len);
+        }
+        
+        let start = ptr as usize;
+        let end = start.checked_add(len as usize)
+            .context("Pointer arithmetic overflow")?;
+        
         let data = mem
             .data(&caller)
-            .get(ptr as usize..(ptr + len) as usize)
-            .expect("range");
-        let s = std::str::from_utf8(data).expect("utf8");
+            .get(start..end)
+            .context("Memory access out of bounds")?;
+        
+        let s = std::str::from_utf8(data)
+            .context("Invalid UTF-8 in log message")?;
         println!("[host log] {}", s);
+        Ok(())
     })?;
 
     let instance = linker.instantiate(&mut store, &module)?;
@@ -101,10 +115,12 @@ fn main() -> Result<()> {
     let engine = Engine::new(&wasmtime::Config::new()).context("Create Engine")?;
 
     // Measure cold vs warm compilation on WAT module
+    // Cold: first time compiling the module
     let t0 = Instant::now();
     let _cold = run_wat_add(&engine)?;
     let cold_compile = t0.elapsed();
 
+    // Warm: second compilation of same module (may benefit from engine caching)
     let t1 = Instant::now();
     let _warm = run_wat_add(&engine)?;
     let warm_compile = t1.elapsed();
