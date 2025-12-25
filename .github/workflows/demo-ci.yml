@@ -38,11 +38,8 @@ jobs:
           cargo build --release --target wasm32-wasip1
 
       - name: Build and run host (release)
-        env:
-          WASI_WASM: demo/wasi/target/wasm32-wasip1/release/wasi_demo.wasm
         run: |
-          cd demo/host
-          cargo run --release -- --wasi "$WASI_WASM" --save
+          cargo run --release --manifest-path demo/host/Cargo.toml -- --wasi demo/wasi/target/wasm32-wasip1/release/wasi_demo.wasm --save
 
       - name: Upload demo artifacts
         uses: actions/upload-artifact@v4
