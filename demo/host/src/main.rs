@@ -117,10 +117,18 @@ fn main() -> Result<()> {
     // Host import demo
     run_host_import(&engine)?;
 
-    // Instantiate time approximation: compile+instantiate combination for WASI
-    // For a simple signal, re-load for measuring instantiate cost
+    // Measure instantiate time separately
     let t3 = Instant::now();
-    let _ = Module::from_file(&engine, &args.wasi)?;
+    let module = Module::from_file(&engine, &args.wasi)?;
+    let wasi = WasiCtx::builder()
+        .inherit_stdio()
+        .inherit_env()
+        .preopened_dir("demo/data", "/data", DirPerms::all(), FilePerms::all())?
+        .build_p1();
+    let mut store = Store::new(&engine, wasi);
+    let mut linker = Linker::new(&engine);
+    wasmtime_wasi::p1::add_to_linker_sync(&mut linker, |ctx| ctx)?;
+    let _ = linker.instantiate(&mut store, &module)?;
     let instantiate_time = t3.elapsed();
 
     let timing = Timing {
