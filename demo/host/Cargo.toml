@@ -1,0 +1,15 @@
+[package]
+name = "wasmtime_demo_host"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dependencies]
+wasmtime = "40"
+wasmtime-wasi = "40"
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+clap = { version = "4", features = ["derive"] }
+wat = "1"

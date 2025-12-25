@@ -1,0 +1,19 @@
+{
+  "name": "wasmtime-demo",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".devcontainer"
+  },
+  "remoteUser": "vscode",
+  "postCreateCommand": "bash -lc 'rustup target add wasm32-wasip1 && cargo --version && echo Done'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode.cpptools"
+      ]
+    }
+  },
+  "features": {}
+}

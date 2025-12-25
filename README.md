@@ -26,6 +26,23 @@
   </h3>
 </div>
 
+## 🎯 One-Click Demo
+
+Want to see Wasmtime in action? Check out our **[interactive demo](docs/demo.md)** showcasing:
+- Running WAT modules via the Wasmtime Rust API
+- WASI sandboxing with preopened directories
+- Host function imports callable from WebAssembly
+- Performance measurements (cold vs warm compile, instantiate, run)
+
+**Quickstart:**
+```bash
+rustup target add wasm32-wasip1
+cargo build --release --manifest-path demo/wasi/Cargo.toml --target wasm32-wasip1
+cargo run --release --manifest-path demo/host/Cargo.toml -- --wasi demo/wasi/target/wasm32-wasip1/release/wasi_demo.wasm --save
+```
+
+See [`docs/demo.md`](docs/demo.md) for full details.
+
 ## Installation
 
 The Wasmtime CLI can be installed on Linux and macOS (locally) with a small install
