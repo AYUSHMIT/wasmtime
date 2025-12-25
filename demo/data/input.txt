@@ -1,0 +1,2 @@
+This file was read by the WASI module via a preopened directory (/data).
+Sandboxing prevents reading files outside preopened paths.

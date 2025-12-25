@@ -1,0 +1,51 @@
+name: Demo CI (Build & Run)
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+
+jobs:
+  demo:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        rust: [ stable ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          targets: wasm32-wasi
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-${{ matrix.rust }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build WASI module (release)
+        run: |
+          cd demo/wasi
+          cargo build --release --target wasm32-wasi
+
+      - name: Build and run host (release)
+        env:
+          WASI_WASM: demo/wasi/target/wasm32-wasi/release/wasi_demo.wasm
+        run: |
+          cd demo/host
+          cargo run --release -- --wasi "$WASI_WASM" --save
+
+      - name: Upload demo artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-artifacts-${{ matrix.os }}
+          path: demo/out/

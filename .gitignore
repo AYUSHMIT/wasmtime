@@ -33,3 +33,7 @@ testcase*.wasm
 testcase*.dna
 testcase*.json
 perf.data*
+
+# Demo artifacts
+demo/out/*.json
+demo/out/*.log
