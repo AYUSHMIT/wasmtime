@@ -36,9 +36,9 @@ Want to see Wasmtime in action? Check out our **[interactive demo](docs/demo.md)
 
 **Quickstart:**
 ```bash
-rustup target add wasm32-wasi
-cargo build --release --manifest-path demo/wasi/Cargo.toml --target wasm32-wasi
-cargo run --release --manifest-path demo/host/Cargo.toml -- --wasi demo/wasi/target/wasm32-wasi/release/wasi_demo.wasm --save
+rustup target add wasm32-wasip1
+cargo build --release --manifest-path demo/wasi/Cargo.toml --target wasm32-wasip1
+cargo run --release --manifest-path demo/host/Cargo.toml -- --wasi demo/wasi/target/wasm32-wasip1/release/wasi_demo.wasm --save
 ```
 
 See [`docs/demo.md`](docs/demo.md) for full details.

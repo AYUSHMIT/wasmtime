@@ -21,7 +21,7 @@ jobs:
         uses: dtolnay/rust-toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-          targets: wasm32-wasi
+          targets: wasm32-wasip1
 
       - name: Cache Cargo
         uses: actions/cache@v4
@@ -35,11 +35,11 @@ jobs:
       - name: Build WASI module (release)
         run: |
           cd demo/wasi
-          cargo build --release --target wasm32-wasi
+          cargo build --release --target wasm32-wasip1
 
       - name: Build and run host (release)
         env:
-          WASI_WASM: demo/wasi/target/wasm32-wasi/release/wasi_demo.wasm
+          WASI_WASM: demo/wasi/target/wasm32-wasip1/release/wasi_demo.wasm
         run: |
           cd demo/host
           cargo run --release -- --wasi "$WASI_WASM" --save

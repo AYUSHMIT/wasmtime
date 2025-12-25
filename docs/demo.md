@@ -9,14 +9,14 @@ This demo showcases:
 ## Quickstart (Local)
 
 ```bash
-# Ensure Rust toolchain and wasm32-wasi target
-rustup target add wasm32-wasi
+# Ensure Rust toolchain and wasm32-wasip1 target
+rustup target add wasm32-wasip1
 
 # Build the WASI module
-cargo build --release --manifest-path demo/wasi/Cargo.toml --target wasm32-wasi
+cargo build --release --manifest-path demo/wasi/Cargo.toml --target wasm32-wasip1
 
 # Run the demo host
-cargo run --release --manifest-path demo/host/Cargo.toml -- --wasi demo/wasi/target/wasm32-wasi/release/wasi_demo.wasm --save
+cargo run --release --manifest-path demo/host/Cargo.toml -- --wasi demo/wasi/target/wasm32-wasip1/release/wasi_demo.wasm --save
 ```
 
 Artifacts will be in `demo/out/`:
@@ -34,11 +34,11 @@ Artifacts will be in `demo/out/`:
 - For WASI, we preopen `demo/data` as `/data` and inherit stdio/env.
 - You can also run via CLI:
   ```bash
-  wasmtime demo/wasi/target/wasm32-wasi/release/wasi_demo.wasm --dir=demo/data --env=WASI_DEMO_ENV=hello
+  wasmtime demo/wasi/target/wasm32-wasip1/release/wasi_demo.wasm --dir=demo/data --env=WASI_DEMO_ENV=hello
   ```
 
 ## Troubleshooting
 
-- Missing `wasm32-wasi` target: run `rustup target add wasm32-wasi`.
+- Missing `wasm32-wasip1` target: run `rustup target add wasm32-wasip1`.
 - Windows path issues: use PowerShell-friendly paths; ensure Rust toolchain installed.
 - If `wasmtime` CLI is missing, install with `cargo install wasmtime-cli`.

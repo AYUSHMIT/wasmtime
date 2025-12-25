@@ -5,7 +5,7 @@
     "context": ".devcontainer"
   },
   "remoteUser": "vscode",
-  "postCreateCommand": "bash -lc 'rustup target add wasm32-wasi && cargo --version && echo Done'",
+  "postCreateCommand": "bash -lc 'rustup target add wasm32-wasip1 && cargo --version && echo Done'",
   "customizations": {
     "vscode": {
       "extensions": [

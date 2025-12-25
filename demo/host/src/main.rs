@@ -5,12 +5,12 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 use wasmtime::{Engine, Linker, Module, Store};
-use wasmtime_wasi::sync::WasiCtxBuilder;
+use wasmtime_wasi::{DirPerms, FilePerms, WasiCtx};
 
 #[derive(Parser, Debug)]
 struct Args {
     /// Path to the compiled WASI module (.wasm)
-    #[arg(long, default_value = "demo/wasi/target/wasm32-wasi/release/wasi_demo.wasm")]
+    #[arg(long, default_value = "demo/wasi/target/wasm32-wasip1/release/wasi_demo.wasm")]
     wasi: PathBuf,
 
     /// Save artifacts (JSON timing, logs)
@@ -18,7 +18,7 @@ struct Args {
     save: bool,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 struct Timing {
     cold_compile_ms: f64,
     warm_compile_ms: f64,
@@ -44,25 +44,22 @@ fn run_wat_add(engine: &Engine) -> Result<i32> {
 
 fn run_wasi(engine: &Engine, wasm_path: &PathBuf) -> Result<()> {
     // Prepare WASI context: inherit stdio, preopen demo/data
-    let preopen_dir = PathBuf::from("demo/data");
-    let dir = cap_std::fs::Dir::open_ambient_dir(&preopen_dir, cap_std::ambient_authority())
-        .context("preopen demo/data")?;
-    let wasi = WasiCtxBuilder::new()
+    let wasi = WasiCtx::builder()
         .inherit_stdio()
         .inherit_env()
-        .preopened_dir(dir, "/data")?
-        .build();
+        .preopened_dir("demo/data", "/data", DirPerms::all(), FilePerms::all())?
+        .build_p1();
 
     let mut store = Store::new(engine, wasi);
     let module = Module::from_file(engine, wasm_path).context("Load WASI module")?;
 
     let mut linker = Linker::new(engine);
-    wasmtime_wasi::add_to_linker(&mut linker, |ctx| ctx).context("Add WASI to linker")?;
+    wasmtime_wasi::p1::add_to_linker_sync(&mut linker, |ctx| ctx)?;
     let instance = linker.instantiate(&mut store, &module).context("Instantiate WASI module")?;
 
     // WASI modules conventionally export `_start`
-    let start = instance.get_func(&mut store, "_start").context("Get _start")?;
-    start.call(&mut store, &[], &mut []).context("Run _start")?;
+    let start = instance.get_typed_func::<(), ()>(&mut store, "_start")?;
+    start.call(&mut store, ())?;
     Ok(())
 }
 

@@ -1,5 +1,5 @@
 use std::fs;
-use std::io::{self, Read};
+use std::io;
 
 fn main() -> io::Result<()> {
     // Read file from preopened dir /data/input.txt and print it
